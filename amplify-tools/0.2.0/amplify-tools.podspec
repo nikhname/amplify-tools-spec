@@ -38,14 +38,12 @@ TODO: Add long description of the pod here.
 'set -e
 export PATH=$PATH:`npm bin -g`
 
+cd ..
 if ! which node > /dev/null; then
   echo "warning: Node is not installed. Vist https://nodejs.org/en/download/ to install it"
-elif ! which amplify > /dev/null; then
-  npm install -g @aws-amplify/cli
+else
+  npx create-amplify-app --platform ios
 fi
-
-cd ..
-amplify-dev init --iosSkeleton
 
 . amplifyxc.config
 amplifyPush=$push
@@ -55,14 +53,33 @@ amplifySecretKey=$secretAccessKey
 amplifyRegion=$region
 amplifyEnvName=$envName
 
+if [ -z "$amplifyAccessKey" ] || [ -z "$amplifySecretKey" ] || [ -z "$amplifyRegion" ]; then
 AWSCLOUDFORMATIONCONFIG="{\
 \"configLevel\":\"project\",\
 \"useProfile\":true,\
 \"profileName\":\"${amplifyProfile}\"\
 }"
+else 
+AWSCLOUDFORMATIONCONFIG="{\
+\"configLevel\":\"project\",\
+\"useProfile\":true,\
+\"profileName\":\"${amplifyProfile}\",\
+\"accessKeyId\":\"${amplifyAccessKeyId}\",\
+\"secretAccessKey\":\"${amplifySecretAccessKey}\",\
+\"region\":\"${amplifyRegion}\"\
+}"
+fi
+
+if [ -z "$amplifyEnvName" ]; then 
 AMPLIFY="{\
 \"envName\":\"amplify\"\
 }"
+else
+AMPLIFY="{\
+\"envName\":\"${amplifyEnvName}\"\
+}"
+fi
+
 PROVIDERS="{\
 \"awscloudformation\":$AWSCLOUDFORMATIONCONFIG\
 }"
